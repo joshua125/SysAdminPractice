@@ -1,0 +1,1080 @@
+1.
+
+	1 adduser <username>
+	2 passwd <newly created username>
+	3 passwd: <enter passwd>
+	4 New Passwd: <confirm password>
+	
+
+2. 
+	2.1
+		1 passwd <newly created username>
+		2 New Passwd: <confirm password>
+	
+	2.2
+		1	(chage -M <num of days> <username>)
+			#:chage -M 90 eddiegoro
+			
+		2	#:chage -E 2015-09-20 usrPPhoenix 
+			EXAMPLE(chage -E <YYYY-MM-DD Date to set it to> <username>)
+
+	2.3
+		1	#:passwd -l Heiachi
+			EXAMPLE(passwd -l <Username>)
+	2.4
+		1	#:chage -d 0 usrLXiaoyu
+			EXAMPLE (chage -d <num of days before expiry> <username>)
+			
+			#:passwd -e usrLXiaoyu -> immediately requires user to change password on next log in
+			
+			#:chage -l -> Lists the expiry to make sure you set her correctly
+			
+			#cat /etc/shadow -> Details about passwords
+			
+	2.5
+		1	#:chage -W 2 eddiegoro
+			EXAMPLE(chage -W <num of days to warn before expiry> <username>)
+			
+			#cat /etc/passwd ->info for all users
+			
+			
+	
+3
+	3.1	
+		1	#:usermod -l hhbaby Heiachi
+		EXAMPLE(usermod -l <new username> <old username>)
+		
+
+4
+	4.1		# groupadd grpAccounting
+			# groupadd grpMarketing
+			# groupadd grpRND
+
+	4.2		
+			# usermod -G grpMarketing eddiegoro
+			# newgrp grpMarketing
+			EXAMPLE(usermod -G <name of group to add user to> <username>)
+			EXAMPLE(newgrp <name of group to activate>)
+			Directions: Do the same for the following users
+				junkazama => grpAccounting
+				usrLXiaoyu => grpRND
+			# gpasswd -a usrPPhoenix grpAccounting
+			Directions: add these users using this method
+				usrPPhoenix => grpAccounting
+				usrNWilliams => grpAccounting
+				hhbaby => grpRND
+			
+				
+	4.3		#groups eddiegoro
+			EXAMPLE(groups <username>)
+			
+	4.4		#groupmod -n grpFinance grpAccounting
+			#groupmod -n grpResearch grpRND
+			EXAMPLE(groupmod -n <NewName> <OldName>)
+			
+			#cat /etc/group ->details about group
+			
+	4.5		#groupmod -g 1029 grpMarketing
+			EXAMPLE(groupmod -g <newID> <groupname>)
+			
+	4.6		#id usrPPhoenix
+			EXAMPLE(id <username>)
+			
+			#groups usrPPhoenix
+			EXAMPLE(groups <username>)
+			
+	
+	4.7		#gpasswd -A userPPhoenix grpFinance
+			#gpasswd -A usrLXiaoyu grpResearch
+			#gpasswd -A eddiegoro grpMarketing
+			EXAMPLE(gpasswd -A <username to designate as ADMIN> <groupname>)
+			
+			#cat /etc/gshadow ->check group details
+			
+
+	4.8		#groupdel grpFinance		
+			#groupdel grpMarketing
+			#groupdel grpResearch
+			
+5
+	5.1		CLI
+			#rpm -a authconfig -> Makesure its on the machine
+			#yum install nss-pam-ldapd -> Get this if its not there
+			#authconfig --enableldap --enableldapauth --ldapserver=<lap server address> --ldapbasedn=""dc=nhls,cd=com" --update
+			#systemctl restart nslcd.service -> restart service
+			#su -ldap2 -> switch to ldap user
+			#id -> check your id to be ldap
+			#authconfig --enablemakehomedir --update -> make home directory
+			Note: Make sure you have permissions to the /Home/directory if youre not root
+			
+			GUI
+			#yum install authconfig-gtk nss-pam-ldap
+			#authconfig-gtk -> start application with gui
+			#system-config-authentication -> start application with gui
+			GUI: Application 
+					> Sundry 
+						> Authentication
+							>Identity & Auth Tab
+								User account: LDAP
+								SearchBase: cd=nhls, dc=com
+								Server: ldap://ldap.nhls.com
+								Authmeth:LDAP passwrd
+								TLS: Download Certificate
+			
+6
+	6.1		fdisk
+			#fdisk -l
+			
+			
+	6.2		#fdisk  /dev/sda ->opens the fdisk program and take you to fdisk program command prompt
+			Command: p -> check the partition table on our disk
+			Command: n -> Prompts us to either create a primary or extended partition e=extended p=primary
+			Command: p -> this then prompts you for the number you want to add to the partition (1-4 depending on if 1 or 2 is taken)			
+			First cylinder: 1 or Enter (This asks for the starting cylinder of the partition if you dont know just push 1) 
+			Last cylinder +cylinders or size{K,M,G}: +10G -> Enter the size of the partition you want to create ...Press 'enter' to take the whole disc
+			Command: p -> check on the partition we have just created
+			Command: w
+			#fdisk -l /dev/sda? -> View the partition table to see if your changes have taken effect
+			#partprobe -> causes the KERNEL to re-read the partition tables on ALL of the Harddrives connected to the machine
+			
+	6.3		#fdisk -l /dev/sdb
+			Command: d
+			Command: 1 -> Select partition to delete. 
+			
+	
+7
+	7.1		#pvcreate /dev/sdb1 -> Creates a physical volume that points to /dev/sdb1
+			 EXAMPLE: (pvcreate <path to device>)
+			
+			#pvs -> displays the listing of PVs(Physical Volumes)
+			#pvdisplay ->Detail view of PVs(Physical Volumes) 
+			
+	7.2		#vgcreate vg0 /dev/sdb1 /dev/sdb2
+			EXAMPLE(vgcreate <name to give vg> </path to device1> <path to device2>)
+			
+			#vgs -> Check volume groups
+	
+	7.3		Handled In Step 7.2		
+
+	7.4		#lvcreate -L 500M -n LV_Marketing vg0
+			EXAMPLE(lvcreate -L <size of volume> -n <name you want to give logical volume> <name of vg[volume group]>)
+			
+	7.5		#umount /dev/vg0/LV_Marketing -> unmount the Logical Volumes
+			#lvremove /dev/vg0/LV_Marketing -> Remove the logical volume
+			EXAMPLE(lvremove <path to Logical Volume>)
+			
+
+8
+	8.1		#mkfs.ext4 /dev/vg0/LV_Marketing
+			#mkfs.ext4 /dev/vg0/LV_Finance
+			EXAMPLE(mkfs.ext4 <path to logical volume>)
+			
+	8.2		#mkdir /home/
+			#nano /etc/fstab [OR] #vim /etc/fstab
+			INPUT: Fill in the following in the /etc/fstab file
+			
+			/dev/vg0/LV_Marketing	/home/MarketingBox      ext4	defaults        0 0
+			/dev/vg0/LV_Finance		/home/FinanceBox      	ext4	defaults        0 0
+		
+			#mount -t ext4 /dev/vg0/LV_Marketing /home/MarketingBox
+			EXAMPLE(mount -t <filesystem type e.g. ext4> <path to LV-Logical Volume> <path to Mount Point>)
+			
+9
+	9.1 	#gdisk /dev/sdb -> Similar to fdisk gdisk=(GPT fdisk). Opens a command prompt to gdisk
+			Command: n
+			Command: Select partition type p=primary e=extended l=logical
+			Command: enter start block
+			Command: +10G -> press 'enter' for end-block or volume size e.g 
+			Command: Y
+			Command: w -> writes it to disk and saves the changes
+			
+	9.2		#pvcreate /dev/sdb3 ->create new physical volume
+			#pvcreate /dev/sdb4 ->create new physical volume
+			#pvcreate /dev/sdb5 ->create new physical volume
+			
+	9.3		#vgextend vg0 /dev/sdb3 ->extend the vg0 to include these newly created pvs
+			#vgestend vg0 /dev/sdb4 ->extend the vg0 to include these newly created pvs
+			EXAMPLE(vgextend <name of volume group> <path to device>)
+			
+	9.4		# vgcreate vg1 /dev/sdb5
+	
+	9.5 	#lvcreate -L 9G -n LV_Research vg1
+	
+			#mkfs.ext4 /dev/vg1/LV_Research -> make fs in the newly created Logical Volume
+			#mkdir /home/ ResearchBox -> Make directory to point the newly created logical volume to
+			#mount -t ext4 /dev/vg1/LV_Research /home/ResearchBox -> Mount the Logical Volume to the folder mount point
+		
+	9.6		INPUT: Fill in the following in the /etc/fstab file
+			
+			/dev/vg0/LV_Research	/home/ResearchBox      ext4	defaults        0 0
+	
+10
+	10.1 	#lvresize -L 1G /dev/vg0/LV_Marketing -> Extend the logical volume
+			EXAMPLE(lvresize -L <New Size to resize to> <Path to Logical Volume>)
+			
+			#resize2fs /dev/vg0/LV_Marketingresize2fs ->Resize the filesystem to fit its new container
+			EXAMPLE(resize2fs <path to logical volume>)
+			
+			#lvs -> check your corrections
+
+			
+	10.2 	#umount /home/ResearchBox -> NOTE: MAKE SURE THE DIR is umounted before shrinking the file system
+			
+
+11
+	11.1	#lvcreate -L 100M -s -n LV_Marketing_Snapshot /dev/vg0/LV_Marketing
+			EXAMPLE(lvcreate -L <SIZE of SNAPSHOT> -s -n <Name Youre Giving to SNAPSHOT> <Path to Logical Volume >)
+			NOTE: The -s OPTION listed above is what designates this as a "snapshot"
+			
+			#lvs -> check to see if it was made
+			
+	11.2	#mount -t ext4 /dev/vg0/LV_Marketing_Snapshot /home/LV_Snapshot_Marketing -> Mount the Snapshot so that you can remove files from it
+	
+	11.3	#umount /home/LV_Snapshot_Marketing -> unmount the snapshot directory
+			#lvremove /dev/vg0/LV_Snapshot_Marketing -> Remove the snapshot similar to removing a Lgical Volume
+			EXAMPLE(lvremove <Path to Logical Volume>)
+			
+			
+12
+	12.1 	#umount /home/MarketingBox -> Unmount the FS
+	
+			# resize2fs /dev/vg0/LV_Marketing 500M  ->Shrink the file system
+			EXAMPLE(resize2fs <Path to device> <Size of new Selection>)
+			
+			#lvresize -L 500M /dev/vg0/LV_Marketing ->Shrink the Logical Volume
+			(EXAMPLE lvresize -L <SIZE of New Volume> <Path to Logical Volume>)
+			
+			#df -h /home/MarketingBox ->check to see the conditions of the new mount point
+			EXAMPLE(df -h <Path to new mount point>)
+	
+
+	
+	
+	
+	
+	
+	12.2	
+	
+	
+13
+	13.1	#fdisk /dev/sdb
+			Command: n -> make new swap
+			Command: t -> enter type of new partition - enter l (list) to list the partition types
+			Command: l -> 
+			Command: Num -> enter the next available to name the partition
+			Command: +X(G,M) X=number G=Gigabytes M=megabytes enter the size of the partition to allocate for swap
+			Command: w -> write the command to disk
+			Command: q -> quit out of fdisk program
+			
+	13.2	#free -m -> Check the current swap size
+			
+			#mkswap -L BIGSWAP /dev/sdb5 ->assign the swap to a particular dev that is swap formatted
+			EXAMPLE(mkswap -L <name to label the swap by> <path to device holding swap>)
+			
+			#swapon -L BIGSWAP ->Turn the swap on
+			EXAMPLE(swapon -L <Label given to swap>)
+			
+			#free -m ->Check to see if new swap is running
+			#swapoff /dev/sdb5 ->Turn Swap off 
+			EXAMPLE(swapoff <path to device containning the swap formatted section>)
+			#free -m -> Check to see if swap size decreased
+			
+			#nano /etc/fstab ->add swap device to /etc/fstab file for mounting during bootup
+			
+			ENTER INTO /ets/fstab:
+			LABEL=BIGDSWAP	swap	swap	defaults	0 0 
+			
+
+14
+	14.1	INSTALL CREATE NFS SERVER
+	
+			#yum groupinstall -y file-server -> install the file server if you dont already have it
+			#firewall-cmd --permanent --add-service=nfs ->	add it to firewall to allow access
+			#firewall-cmd --reload -> reload the firewall
+			
+			#systemctl	enable	rpcbind -> enable the following services
+			#systemctl	enable	nfs-server
+			#systemctl	enable	nfs-lock
+			#systemctl	enable	nfs-idmap
+			
+			#systemctl	start	rpcbind -> start the services
+			#systemctl	start	nfs-server
+			#systemctl	start	nfs-lock
+			#systemctl	start	nfs-idmap
+			
+			#mkdir -p /home/tools ->Make a directory to export to others so they can all share it
+			#chmod 777 /home/tools
+			#mkdir -p /home/guests
+			#chmod 777 /home/guests
+			
+			#yum install -y settroubleshoot-server
+			#semanage fcontext -a -t public_content_rw_t "/home/tools(/.*)?"
+			#semanage fcontext -a -t public_content_rw_t "/home/guests(/.*)?"
+			#restorecon -R /home/tools
+			#restorecon -R /home/guests
+			
+			
+			#setsebool -P nfs_export_all_rw on -> Set the SELinux Bools
+			#setsebool -P nfs_export_all_ro on
+			#setsebool -P use_nfs_home_dirs on
+			
+			EDIT: /etc/exports -> Add the following two lines to /etc/exports client1=clients name or clients ip
+			/home/tools client1(rw,no_root_squash)
+			/home/guests client2(rw,no_root_squash)
+			
+			#exportfs -avr ->Export the folders so users can access them
+			#systemctl restart nfs-server
+			
+			# showmount -e localhost -> check the local configuration for nfs
+			Export list for localhost:
+			/home/guests *
+			/home/tools  *
+			
+			
+			# yum install -y nfs-utils
+			
+			# mount -t nfs nfsserver:/home/tools /mnt
+			EXAMPLE(mount -t nfs <ip or hostname to nfs server>:<path to nfs server location> <place to mount on local machine>)
+			
+
+
+
+		
+15
+	15.1	#yum install -y nfs-utils ->If nfs is not installed on a client..install it here
+			# mount -t nfs nfsserver:/home/tools /mnt ->mount the nfs file exported from the server
+			EXAMPLE(mount -t nfs <hostname or ip of nfs server>:<path to exported shared folder> <path to mount point  on local machine>)
+			
+	15.2 	EDIT /etc/fstab
+			192.168.75.132:/home/tools	/mnt/nfs	nfs		_netdev		0 0 
+			NOTE: _netdev means this is a netdevice so (fstab) wait until the networkings services are up before trying to mount
+			
+			
+					
+			
+16  		/////////////////////////////////////// CONFIGURE CIFS & SAMABA ////////////////////////////////////////////////////		
+			
+	16.1 	#yum -y install samba
+	
+	
+	16.2	#mkdir /sambas ->create the directory where files will be stored
+			#cd /sambas 
+			#touch file1 file2 file3 -> add three files for testing
+			
+	16.3 	#smbpasswd -a user1 user2 user3 
+			EXAMPLE(smbpasswd -a <username>) NOTE: <username> must be the same as an existing user on the system
+			
+			#groupadd smbusers ->create group 
+			#chown :smbusers /smbdemo
+			#usermod -G smbusers don
+			
+	16.4	EDIT /etc/samba/smb.conf
+
+			------ Network Related Options --------
+			workgroup = <name of workgroup windows and other machines must belong to>
+			server string = <Whatever String or Sentence you want to put >
+			
+			------ Standalone Server Options ------
+			security = user
+			passdb backend = tdbsam
+			
+			
+			ADD THIS SECTION TO END OF CONFIGURATION FILE
+			
+			[<folder of share e.g. sambas>] 
+				comment = Linux Samba Share
+				path = /smbdemo
+				browsable = yes
+				guest ok = yes
+				read only = no
+				create mask = 0775
+			
+			#systemctl samba restart
+			
+	
+	
+17			
+	17.1	ACTION: RUN THESE COMMANDS FROM SOMEOTHER MACHINE ON THE Network
+			#smbclient -U user1 192.168.0.13//sambas/
+			EXAMPLE(smbclient -t <username> <IP or Hostname of Samba server> <path to samba shared folder starting from root with //>)
+			
+			
+	17.2 	#mkdir /mnt/sambahere -> make a samba mount point for the samba share 
+			#mount.cifs //192.168.0.10/sambas/ /mnt/sambahere -o tardus -> mount the CIFS or samba system folder
+			EXAMPLE(#mount.cifs <hostname and path to smb folder> <mountpoint> -o <username>)
+			
+			OR: 
+			
+			#mount -t cifs -o user=tardus //192.168.0.10/sambas /mnt/sambahere
+			EXAMPLE(mount -t cifs -o user=<username> <hostname or ip and path to share> <path to mount point>)
+			
+	17.3	EDIT /etc/fstab
+			192.168.0.10:/sambas	/mnt/sam2		smb		credentials=/etc/samba/passwd,_netdev 0 0
+			EXAMPLE(hostname-or-IPaddress:/Share_Name mountdir smb credentials=filename,_netdev 0 0)
+			
+
+
+18 
+	18.1 	#mkdir /sambafs
+			#chmod +777 /sambafs
+			
+			EDIT /etc/auto.master 
+		
+			/sambafs		/etc/auto.sambafs
+			
+			#cd /etc/
+			#touch auto.sambafs ->create the file that auto.master will read from
+			
+	18.2	EDIT auto.sambafs
+	
+			smbfolder		-fstype=cifs,username=tardus,password=12345 ://192.168.0.10/sambas/ 
+
+	18.3	#systemctl restart autofs.service
+	
+	
+19
+	19.1	#inustall yum vsftpd
+	
+	19.2 	#systemctl enable vsftpd -> Make the service start at bootup
+			#service vsftpd start -> Start the service
+			#netstat -tanp | grep LISTEN -> find out if it is listening vsftpd and on what port e.g.21
+	
+	19.3	#firewall-cmd zone=public add-port=21 -> open port in firewall
+	
+	
+	19.4 	#nano /etc/vsftpd/vsftpd.conf
+			#COMMENT out option
+				#anon_upload_enable = YES
+				#anon_make_directory = YES
+			#UNCOMMENT option
+				chroot_list_enable=YES
+				chroot_list_file=/etc/vsftpd/chroot_list
+			
+			#echo 'allow_writable_chroot' >> /etc/vsftpd/vsftpd.conf 
+
+			#ADD OPTION	IF NOT PRESENT
+				userlist_deny= NO
+			#touch chroot_list /etc/vsftpd/
+			#nano /etc/vsftpd/chroot_list - > add the users root + whoever else you want to block 
+				
+	19.5	#setsebool -P ftp_home_dir=1 -> make sure the sebool is set
+			#setsebool -P ftp_home_directory 1 -> make sure the sebool is set
+			#setsebool -P ftp_home_dir on
+			#setsebool -P allow_ftpd_full_access 1
+	
+	19.16  	#lftp Tardus@192.168.0.14 -> log into ftp_home_dir
+			EXAMPLE(lftp <username>@<ip or host name>)
+			#->Enter in the password for the user
+			
+	19.7	#ftp> lcd /home/Oestes/Desktop -> This will move you to the local drive from inside of the ftp session
+			#ftp> pwd -> this will show you the path you are currently logged in as on the ftp machine <username>@<host or ip>
+			#put somefile.txt -> this will put the file located in /home/oestes/Desktop/somefile.txt -> INTO the path  <username>@<host or ip> /home/<username>/
+	
+	
+	
+20
+	20.1 	#install yum sshd install
+	
+	20.2 	#nano /etc/ssh/sshd.conf -> EDIT the sshd.conf file
+			CHANGE
+	
+	
+	20.3	#ssh Tardus@192.168.0.14 -> Log into ssh
+	
+	20.4 	#scp /home/Tardus/Desktop/File1.txt Tardus@192.168.0.14:/home/Desktop  -> Move file from local machine to SSH path
+			EXAMPLE(scp <path to file> <Username>@<hostname>:<path to save-to location>)
+	
+	
+	
+	
+21
+	21.1	#yum install httpd
+	
+	21.2 	#nano /etc/http/conf/httpd.conf
+			EDIT and make sure lines <Directory "/var/www/html"> match the line (DocumentRoot "/var/www/html" )
+			
+			#systemctl restart httpd.service ->restart service
+			
+	21.3 	IN BROWSER enter: http://localhost -> you should see the apache test page.
+			Create an html document index.html and place it in /var/www/html
+			IN BROWSER enter: http://localhost -> you should see your index.html page 
+	
+	
+	21.4 	#mkdir /var/www/html/example1.com/ -> make a directory for the browser to find .html files
+			#mkdir /var/www/html/kodi.com/ -> make a directory for the browser to find .html files
+	
+			#nano /etc/http/conf/httpd.conf -> Add 2 virtual hosts
+			EDIT configuration file to add 2 virtualhosts to the server (example1.com | kodi.com)
+			
+			<VirtualHost example1.com:80>
+				DocumentRoot /var/www/html/example1.com/
+				ServerName example1.com
+				ErrorLog logs/example.com-error_log
+				CustomLog logs/example.com-access_log common
+			</VirtualHost>
+
+			<VirtualHost kodi.com:80>
+				DocumentRoot /var/www/html/kodi.com/
+				ServerName kodi.com
+				ErrorLog logs/kodi.com-error_log
+				CustomLog logs/kodi.com-access_log common
+			</VirtualHost>
+			
+			#service httpd configtest ->  test the configurations on the changes that were made
+			#systemctl restart httpd.service 
+			
+	
+			
+22
+
+	22.1 	#mkdir /home/eddiegoro/skylock/ 
+			#mkdir /home/eddiegoro/moveMeDirectory/ 
+			#mkdir /home/eddiegoro/deleteMeDirectory/ 
+
+			#mkdir /home/junkazama/compressionfolder/
+			#mkdir /home/junkazama/copyMeDirectory/
+			#mkdir /home/junkazama/skylock/
+			
+			#mkdir /home/Tardus/compressByTarball/
+			#mkdir /home/Tardus/decompressByTarball/
+			
+
+	22.2 	#mkdir /home/grpMarketing/ -> make a folder that all the marketing group can share
+			#chmod 2070 /home/grpMarketing -> change permission and set the SGIDbit (Set Group Id Bit) to 2
+			this will give all files created under this folder the same file permissions as the group and not as the person that created them
+			the 2070 = 2:set the SGIDbit to assign all files created to the same permission as the group 0=owner gets no permissions 
+			7=only the group gets all the permissions 0=everyone else gets no permissions
+			EXAMPLE(chmod 2070 <path to directory>)
+			#lschattr /home/grpMarketing -> check to see the permissions
+			#ls -ld /home/grpMarketing -> check to see the SGIDbit permission set
+			
+			#mkdir /home/grpAccounting/
+			#chmod 2070 /home/grpAccounting/ 
+			#lschattr /home/grpAccounting/ 
+			#ls -ld /home/grpAccounting/
+
+			#mkdir /home/grpFinance/
+			#chmod 2070 /home/grpFinance/ 
+			#lschattr /home/grpFinance/ 
+			#ls -ld /home/grpFinance/ 
+			
+			
+			
+	22.3	#touch /home/eddiegoro/skylock/addfile.txt eddie_copy_file.txt deletefile.txt FilePerm.txt
+			#touch /home/eddiegoro/moveMeDirectory/MoveMeFile01.txt
+			#touch /home/eddiegoro/deleteMeDirectory/deletemefile01.txt
+	
+			#touch /home/junkazama/skylock/FilePerm.txt movemefile.txt
+			#touch /home/junkazama/copyMeDirectory/copymefile01.txt appendtome.txt 
+			
+			#touch /home/Tardus/compressByTarball/compressMeFile01
+			#touch /home/Tardus/compressByTarball/compressMeFile02
+			#touch /home/Tardus/compressByTarball/compressMeFile03
+			#touch /home/Tardus/compressByTarball/compressMeFile04
+			
+	
+	
+	22.4	#echo "googoo1" > /home/eddiegoro/skylock/addfile.txt -> add to file
+			#echo "googoo2" >> /home/junkazama/copyMeDirectory/appendtome.txt -> append to file
+			
+			
+	22.5	#mv /home/eddiegoro/moveMeDirectory/ /home/grpMarketing/
+			#mv /home/junkazama/skylock/movemefile.txt /home/grpAccounting/
+			
+	22.6	#cp -R /home/junkazama/copyMeDirectory/ /home/grpAccounting/
+			
+	
+23
+	
+	23.1	#ln  /home/eddiegoro/skylock/addfile.txt /home/grpMarketing/HardLink_addfile.txt
+	
+	23.2 	#ln -s /home/junkazama/copyMeDirectory/appendtome.txt  /home/grpAccounting/SoftLink_appendtome.txt	
+	
+	
+24
+	
+	24.1 	#nano /etc/fstab -> add ",acl" to the defaults
+			#mount -o remount /home ->remount to take change effect
+			#mount | grep home -> check on status of current mount just modified
+			
+			#su junkazama -> change user
+			#getfacl /home/junkazama -> check on users acl settings
+			#setfacl -m u:eddiegoro:rwx /home/junkazama/ -> give eddiegoro access to jun's guts
+			EXAMPLE(setfacl -m u:<username>:<permissions> <path to folder>)
+			#su - eddiegoro
+			#nano /home/junkazama/movemefile.txt -> Test to see if eddit can edit the file
+			#setfacl -x u:eddiegoro /home/junkazama -> Remove the acl settings
+			#nano /home/junkazama/movemefile.txt -> Test to see if eddit can edit the file
+			
+			
+			
+25
+
+	25.1 	#tar -cvf TarCompress.tar /compressByTarball -> Compress all the files in the folder compressByTarball cf=start tarbal v=verbose
+			what the command is doing
+			EXAMPLE(tar -cvf <name of tar once created> <path to folder or file to be tar'd>)
+			#ls -lh TarCompress.tar -> create the Tar that is actually larger in size than all the files added up together
+			#gzip TarCompress.tar -> this will compress the tar itself
+			#ls -lh TarCompress.tar.gz -> check to see that the size has been reduced
+			
+	25.2 	#tar -czvf TarZCompress.tar.gz /compressByTarball -> compress everything again using a single command
+			#tar -czvf TarZCompress.tgz /compressByTarball -> compress everything again using a single command
+			#tar -czvf TarBZ2Compress.bz2 /compressByTarball -> compress everything again using a single command	
+			
+
+	25.3 	#cp TarBZ2Compress.bz2 /decompressByTarball
+			#tar -xzvf TarZCompress.tar.gz -> Decompress the files to this location
+			#ls -l -> check to see the files were decompressed
+			
+			
+26
+
+	26.1 	#touch GrepMeFile.txt -> make file using the text below
+			Text: GrepMeFile.txt
+			The standard Lorem Ipsum passage, used since the 1500s
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+			Ut enim ad minim veniam, quis nostr$
+				
+			email_1@gmail.com
+			email_2@gmail.com
+			email_3@gmail.com
+			email_4@gmail.com			
+				
+			Section 1.10.32 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
+
+			"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+			totam rem aperiam, eaque ipsa quae ab illo inventore veritati$
+
+			1914 translation by H. Rackham
+			"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain 
+			was born and I will give you a email_5@gmail.com complete account of the system, an$
+			Section 1.10.33 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
+
+			"At vero eos et accusamus et iusto odio dignissimos email_6@gmail.com ducimus qui blanditiis praesentium 
+			voluptatum deleniti atque corrupti quos dolores et quas molestias exceptu$
+			1914 translation email_7@gmail.com by H. Rackham
+
+			"On the other hand, we denounce with righteous indignation and dislike men who are 
+			so beguiled and demoralized by the charms of pleasure of the moment, so blind$
+
+			#egrep -o " ^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$"
+
+
+			
+27
+			
+	27.1 	#man systemctl -> read about systemctl throug man
+	27.2 	#info systemctl -> read about systemctl through info
+	27.3 	#cd /usr/shar/doc/ -> #ls -l
+			
+
+28
+	28.1	# systemctl status firewalld -> check to see if firewall is running
+			# firewall-cmd --state
+			NOTE: If you’ve got several network interfaces in IPv4, you will have to activate ip forwarding.
+				  To do that, paste the following line in the /etc/sysctl.conf file:
+				  net.ipv4.ip_forward=1
+			# sysctl -p -> activate the configuration
+			
+
+			# firewall-cmd --get-default-zone -> check your default zone
+			# firewall-cmd --get-active-zones -> get the list of zones to interfaces
+			# firewall-cmd --get-zones -> Get list of all available zones
+			# firewall-cmd --set-default-zone=home -> permanently change default zone to home
+			# firewall-cmd --zone=internal --change-interface=eth0 -> Temporarily assign interface to zone
+			# firewall-cmd --permanent --zone=internal --change-interface=eth0 -> assign interface to internal zone permanently
+			NOTE: To assign the eth0 network interface permanently to the internal zone (a file called internal.xml is created in the /etc/firewalld/zones/ directory), 
+			Note: This operation can also be done with the nmcli con mod command (see RHEL7: How to get started with nmcli).
+			# firewall-cmd --get-zone-of-interface=eth0 -> know which zone is associated with the etho0 interface
+			# firewall-cmd --zone=public --list-all -> get the current configuration of the public zone
+			
+			# firewall-cmd --permanent --new-zone=test -> #firewall-cmd --reload -> create new zone
+			
+			----------------------------------------------------------------------------
+			
+			A zone can be bound to a network interface (see above) and/or to a network addressing (called here a source).
+			Any network packet entering in the network stack is associated with a zone.
+			The association is done according to the following pattern:
+				– is the packet coming from a source already bound to a zone? (if yes, it is associated with this zone),
+				– if not, is the packet coming from a network interface already bound to a zone? (if yes, it is associated with this zone),
+				– if not, the packet is associated with the default zone.
+
+			This way, multiple zones can be defined even on a server with only one network interface!
+			Caution: To get this feature, Firewalld relies on NetworkManager. This means that if you plan to stop NetworkManager for 
+			any reason (for example when building a KVM host), you will have to stop Firewalld and use Iptables instead!
+			To add a source (here 192.168.2.0/24) to a zone (here trusted) permanently, type:
+			
+			# firewall-cmd --permanent --zone=trusted --add-source=192.168.2.0/24 ->add a source to a zone
+			# firewall-cmd --reload
+
+			Note1: Use the –remove-source option to delete a previous assigned source.
+			Note2: Use the –change-source option to move the source to the new specified zone.
+			Note3: If you want to temporarily add a source to a zone, don’t use the –permanent 
+			option and don’t reload the firewall configuration. If you reload the firewall configuration, 
+			this will cancel all the operation.
+			
+			------------------------------------------------------------------------------------
+			To keep track of your configuration (active zones are zones that have a binding to an interface or source), type:
+
+			# firewall-cmd --get-active-zones
+
+			-------------------------------------------------------------------------------------
+			Service Management
+
+			After assigning each network interface to a zone, it is now possible to add services to each zone.
+			To allow the http service permanently in the internal zone, type:
+
+			# firewall-cmd --permanent --zone=internal --add-service=http
+			# firewall-cmd --reload
+			
+			Note1: Type –remove-service=http to deny the http service.
+			Note2: The firewall-cmd –reload command is necessary to activate the change. Contrary to the –complete-reload option, current connections are not stopped.
+			Note3: If you only want to temporarily add a service, don’t use the –permanent option and don’t reload the firewall configuration. If you reload the firewall configuration, you cancel all the operation.
+
+			To get the list of services in the default zone, type:
+
+			# firewall-cmd --list-services
+
+			Note: To get the list of the services in a particular zone, add the –zone= option.
+						
+			-----------------------------------------------------------------------------------------
+			
+			With the Firewalld package, the firewall configuration of the main services (ftp, httpd, etc) comes in the /usr/lib/firewalld/services directory. But it is still possible to add new ones in the /etc/firewalld/services directory. Also, if files exist at both locations for the same service, the file in the /etc/firewalld/services directory takes precedence.
+
+			For example, it is the case of the HAProxy service. There is no firewall configuration associated.
+			Create the /etc/firewalld/services/haproxy.xml and paste the following lines:
+
+				<?xml version="1.0" encoding="utf-8"?>
+				<service>
+				 <short>HAProxy</short>
+				 <description>HAProxy load-balancer</description>
+				 <port protocol="tcp" port="80"/>
+				</service>
+			Note: You can use the firewall-cmd –permanent –new-service=haproxy command to quickly create a configuration file skeleton.
+
+			Assign the correct SELinux context and file permissions to the haproxy.xml file:
+			# cd /etc/firewalld/services
+			# restorecon haproxy.xml
+			# chmod 640 haproxy.xml
+			
+			Add the HAProxy service to the default zone permanently and reload the firewall configuration:
+			# firewall-cmd --permanent --add-service=haproxy
+			# firewall-cmd --reload
+			
+						
+			------------------------------------------------------------------------------
+			
+			Port Management
+
+			Port management follows the same model as service management.
+			To allow the 443/tcp port temporarily in the internal zone, type:
+
+				# firewall-cmd --zone=internal --add-port=443/tcp
+				Note1: To make the configuration permanent, add the –permanent option and reload the firewall configuration.
+				Note2: Type –remove-port=443/tcp to deny the port.
+
+			To get the list of ports currently open in the internal zone, type:
+			
+				# firewall-cmd --zone=internal --list-ports
+				Note: To only get the list of ports permanently open, add the –permanent option. Here, you will not get anything.
+			
+			-----------------------------------------------------------------------------------------
+			
+			Masquerading
+
+			If your firewall is your network gateway and you don’t want everybody to know your internal addresses, you can set up two zones, one called internal, the other external, and configure masquerading on the external zone. This way, all packets will get your firewall ip address as source address.
+
+			To set up masquerading on the external zone in a temporary way, type:
+
+			# firewall-cmd --zone=external --add-masquerade -> add the option
+			# firewall-cmd --zone=external -–query-masquerade -> find out if the option is active
+			# firewall-cmd --zone=external --remove-masquerade -> remove the option
+			
+			
+			---------------------------------------------------------------------------------------
+			
+			Direct Rules
+
+			It is still possible to set specific rules by using the direct mode (here to open the tcp port 9000) that by-passes the Firewalld interface:
+
+			# firewall-cmd --direct --add-rule ipv4 filter INPUT 0 -p tcp --dport 9000 -j ACCEPT
+			# firewall-cmd --direct --remove-rule ipv4 filter INPUT 0 -p tcp --dport 9000 -j ACCEPT
+			
+				
+				Note2: Use the same command with the –remove-rule instead of –add-rule to delete the rule.
+				Note3: The configuration is temporary except if you add the –permanent option.
+				Note4: It is not necessary to reload the firewall configuration, all commands are directly activated.
+
+			To display all the direct rules added, type:
+
+			# firewall-cmd --direct --get-all-rules
+			
+			-------------------------------------------------------------------------------------------
+			
+			Offline Configuration
+
+			In some cases (installations through Anaconda or Kickstart for example), you need to set up firewall rules when Firewalld is not running. 
+			The firewall-offline-cmd command has just been created for this purpose.
+			For instance, to open the tcp port 22, you would type in the /etc/sysconfig/iptables file:
+
+			-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+			Instead, you can now execute the following command:
+
+			# firewall-offline-cmd --direct --add-rule ipv4 filter INPUT 0 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+			
+			-------------------------------------------------------------------------------
+			
+			Configuration Backup
+
+			To store the current configuration into files, type:
+
+			# iptables -S > firewalld_rules_ipv4
+			# ip6tables -S > firewalld_rules_ipv6
+			---------------------------------------------------------------------------------------------
+			
+			
+			
+29
+
+	29.1 	EDIT: /etc/ssh/ssh_config to fore passphrase authentication: comment-in PasswordAuthentication no
+			NOTE: You must create the password and copy it over the other ssh machine AS THE USER if you do it as root ONLY ROOT will be able 
+			to use the key
+			
+			
+			#ssh-keygen -b 2048 -t rsa ->generate random keypair
+			ENTER: Enter the passphrase you want to associate with that key you have just generated
+			
+			#ls -ld ~/.ssh/ -> check to see if the path and the keys where generated
+			#ssh-copy-id -i ~/.ssh/id_rsa.pub user01@192.168.0.10 -> copy the ssh key gen over to the other machine
+			EXAMPLE(ssh-copy-id -i~/.ssh/id_rsa.pub <username>@<hostname> )
+			
+			
+			#ssh-keygen -b 2048 -t ecdsa ->generate random keypair of type ecdsa
+			#ls -ld ~/.ssh/ -> check to see if the path and the keys where generated
+			#ssh-copy-id -i ~/.ssh/id_rsa.pub user01@192.168.0.10 -> copy the ssh key gen over to the other machine
+			
+			
+			SAVE PASSPHRASE FOR TERMINAL SHELL SESSION
+			#ssh-add
+			ENTER: Enter the passphrase for /home/<username>/.ssh/id_rsa:
+			
+			CONFIGURE SSH CLIENT
+			1.Make sure you have the openssh-askpass package installed. 
+			If not, see Section 7.2.4, “Installing Packages” for more information on how to install new packages in 
+			Red Hat Enterprise Linux.
+			
+			2.Press the Super key to enter the Activities Overview, type Startup Applications and then press Enter. 
+			The Startup Applications Preferences tool appears. The tab containing a list of available startup 
+			programs will be shown by default. 
+			The Super key appears in a variety of guises, depending on the keyboard and other hardware, 
+			but often as either the Windows or Command key, and typically to the left of the Spacebar.
+			
+			3. Click the Add button on the right, and enter /usr/bin/ssh-add in the Command field.
+			
+			4.Click Add and make sure the checkbox next to the newly added item is selected.
+			
+			5. Log out and then log back in. A dialog box will appear prompting you for your passphrase. 
+			From this point on, you should not be prompted for a password by ssh, scp, or sftp.
+			
+30
+	30.1	#sestatus -> check the status
+	
+	30.2	#getenforce -> see the current enforcing level
+			#setenforce permissive -> Set the current enforcing level to permissive
+			#setenforce 0
+			#setenforce enforcing -> Activate or enable the current SELinux level
+			#setenforce 1
+			#setenforce disabled -> Disable the current selinux level
+			
+			
+	30.3 	EDIT /etc/sysconfig/selinux/  OR /etc/selinux/config/
+			SELINUX=enforcing -> Modify config file
+			
+	30.4 	NOTE: To make the reboot MANDATORY for configuration changes
+			#setsebool secure_mode_policyload on
+			
+
+31
+	31.1 	#ls -Zd <File or Path to search the SELinux attributes on> -> lists all the files and their contexts
+			#ls -Z
+			#ps -eZ
+	31.2 	#yum install policycoreutils-gui setroubleshoot
+			#apropos selinux
+			USE: Find and Use the Interface to set SELINUX security booleans
+			
+	31.5 	#chcon --reference /etc/anacond-ks.cfg  /etc/sshd -> change or break sshd just to see an alert and diagnose
+			EXAMPLE(chcon --reference <path to folder to use as a reference> <path to file or folder to change> ->change security context)
+			#service sshd start -> Try to access the folder in order to get an error 
+			USE: Use the interface to read the alert
+			
+			#sealert -a /var/log/audit/audit.log
+			#restorecon -R -v /etc/ssh/ssh/ssh_config ->restore the config file to etc_t
+			#ls -Z /etc/ssh/ssh/ssh_config
+			#service sshd restart
+			
+			#chcon -t etc_t /etc -> change the context of etc just to be sure
+			#semanage fcontext -a -t etc_t "/etc/ssh/ssh/ssh_config" -> persist pass a fs relabeling
+			EXAMPLE(semanage fcontext -a -t <label> <path to file or folder>)
+			#restorecon -R -v /etc/ssh/ssh/ssh_config -> restore ... just to be sure
+			#ls -i /etc/ssh/sshd_config -> check on the inode number 
+32
+	32.1 	#semanage boolean | less -> view all of booleans 
+			#system-config-selinux -> bring up the graphic interface and check the bools
+			#getsebool -a | grep ftp
+			#set_bool ftp_home_dir on -> turn off the SELinux Boolean for allowing people to FTP into the home directory
+			0=off 1=on true=on false=off
+			#set_book -P ftp_home_dir on -> use this for persistence not for testing
+			
+
+33
+
+	33.1 	#hostnamectl -> reads the curent hostname
+			#hostname -> reads the current user 
+			#nmcli gen host -> reads the curent hostname
+			NOTE: 3 types of host name 
+				1.static-can be named by user and stored in /etc/hostsy
+				2.transient - created dynamically by the kernel and stored in /etc/host defaulting to localhost
+				3.pretty - displayed to the user in freefom UTF-8 format 
+	
+	33.2 	#nmcli con mod enp5s0f0 +ipv4.dns 8.8.8.8 -> add this 8.8.8.8 address to the /etc/resolv.conf file
+			EXAMPLE(nmcli con mod <name of device> +ipv4.dns <ip to the DNS server you want to add>)
+			
+			#nmcli con up net-eth0 -> bring connection back up after making the change
+			EXAMPLE(nmcli con up <name of connection>)
+			
+			#nmcli con mod enp5s0f0 -ipv4.dns 8.8.8.8 -> add this 8.8.8.8 address to the /etc/resolv.conf file
+			NOTE: # nmcli con mod enp5s0f0 ipv4.ignore-auto-dns yes -> USE THIS FOR DHCP to ignore it
+			NOTE: You get the same result by specifying PEERDNS=no in the network configuration files.
+			
+			
+			
+	33.3 	#nmcli con show -> show all available connections
+			#nmcli connection show -a
+			#nmcli device status -> show all the devices available and their state
+			#nmcli general status
+			
+			
+			
+			# nmcli con add con-name net-eth0 ifname eth0 type ethernet ip4 192.168.1.10/24 gw4 192.168.1.1 -> create connection 
+			EXAMPLE(nmcli con add con-name <connection name> ifname eth0 type ethernet ip4 <ipv4 address> gw4 <ipv4 address to gw4> )
+			
+			
+			#nmcli del net-eth0 -> delete the connection named "net-etho" 
+			NOTE if net-eth0 was name net eth0 then put in "" like nmcli del "net eth0"
+			OPTIONAL: # nmcli con del 8d83684f-cd22-42cc-9fff-7704945a5c36 -> you could optionally use the UUID 
+			
+			
+			# nmcli con show net-eth0 -> show all the details for connection net-eth0
+			#ip a -> show all ip connections
+			OPTIONAL #ip address show
+			#ip r -> show all routes
+			OPTIONAL #ip route show
+			
+			
+			
+			
+			
+			
+	33.4 	# nmcli con down net-eth0 -> stop connection net-eth0 from running
+			# nmcli device disconnect net-eth0
+			
+			# nmcli con show -> show to make sure 
+			NOTE: To get persistence through boot ..have it start at boot ...connection.autoconnect being set to yes, equivalent to ONBOOT=yes 
+			
+			# nmcli con up net-eth0 -> start connection net-eth0 from running
+			# nmcli device connect net-eth0
+			
+		
+			# nmcli con up net-eth0 -> stop connection net-eth0 from running
+		    OPTIONAL: nmcli con up <UUID>
+	
+
+	
+	33.5	# nmcli con mod net-eth0 connection.autoconnect no ->stop the device from running at boot time
+			# nmcli con mod net-eth0 connection.autoconnect yes ->start the device running at boot time
+			
+	
+	
+	33.6 	# nmcli con mod net-eth0 ipv4.addresses "192.168.2.10/24 192.168.2.1" -> change the ip address and gateway of the net-eth0 connection
+			# nmcli con up net-eth0
+			
+	
+	
+	33.7    # nmcli connection add type ethernet con-name <NAME_OF_CONNECTION> ifname interface-name ip4 <IP_ADDRESS> gw4 <GW_ADDRESS>
+			# nmcli connection add type ethernet con-name NEW ifname eno16777736 ip4 192.168.1.141 gw4 192.168.1.1
+			# nmcli connection modify NEW ipv4.dns "8.8.8.8 8.8.4.4"
+			# nmcli connection up NEW ifname eno16777736
+			EXAMPLE(# nmcli connection up NEW ifname <connection name>)
+			
+			# nmcli connection up NEW ifname eno16777736 -> To bring up connection
+			EXAMPLE(# nmcli connection up NEW ifname <connection name>)
+			
+			# nmcli connection add type ethernet con-name NEW_DHCP ifname eno16777736 -> add connection with DHCP
+			
+			
+34
+	34.1 	#systemctl start ntpd -> start service
+			#systemctl stop ntpd -> stop service
+	  
+	34.2 	#systemctl enable ntpd -> add service at boot 
+			#systemctl disable ntpd -> disable services at boot
+   
+
+   
+35
+	35.1 	#systemctl list-units -t target -a ->list all available runlevel targets
+	35.2	#systemctl set-default multi-user.target ->this changes default runlevel, reboot and see
+			OPTIONAL #systemctl enable multi-user.target --force
+			NOTE: These are the following run levels
+				systemctl rescue: to move to single user mode/maintenance level with mounted local file systems,
+				systemctl emergency: to move to single user mode/maintenance with only /root mounted file system,
+				systemctl isolate multi-user.target: to move to multi-user level without graphical interface (equivalent to previous run level 3),
+				systemctl isolate graphical.target: to move to multi-user level with graphical interface (equivalent to previous run level 5),
+				systemctl set-default graphical.target: to set the default run level to multi-user graphical mode,
+				systemctl get-default: to get the default run level.
+	
+
+36
+	36.1 	#yum install ntp->install ntp yum
+
+			EDIT: nano /etc/ntp.conf  
+			COMMENT "#Host on local network are less restricted" underneath
+			type the following to allow the system to synchronize their time from this server
+            restrict <local machines IP address> mask <local machines subnet mask> nomodify notrap
+			EXAMPLE(restrict 192.168.0.10 mask 255.255.255.0 nomodigy notrap)
+			
+			#systemctl restart ntpd
+			#systemctl enable ntpd
+			
+37
+	37.1 	#yum update
+			#yum upgrade
+         
+38
+	38.1 	#mkdir /srv/kickstart/anaconda-ks.cfg -> create this location on nfs server
+			ACTION: Configure this server to serve the anaconda files from this location
+			
+			#bool linux ks=nfs:192.168.0.14:/srv/kickstart/anaconda-ks.cfg -> press esc at boot to get this menu
+			NOTE: Edit the kickstarter file if neccessary
+			
+
+39
+	39.1   	# yum group install "Virtualization Host" -> download/install the application if not there
+			# yum install -y virt-install
+			# yum install -y virt-top
+
+
+			# systemctl start libvirtd -> Activate the Chronyd/NTP service at boot and start it:
+			# systemctl enable chronyd && systemctl start chronyd -> set NTP
+			
+
+40
+	40.1 	#virsh -> drops you in virtual manager from command line
+			#virsh: nodeinfo <Name of DomainGuest>
+			#virsh: start <Name of DomainGuest>
+			#virsh: shutdown <Name of DomainGuest>
+			#virsh: destroy <Name of DomainGuest>
+41
+	41.1	#virsh: autostart <Name of DomainGuest> ->configure to start at boot
+			
+			
